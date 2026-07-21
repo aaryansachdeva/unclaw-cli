@@ -1,6 +1,6 @@
 {
   "name": "unclaw-cli",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Give your coding agent (Codex, opencode, Gemini CLI, Cursor, Cline, Claude Code, ...) a voice: the UnClaw 3D avatar's `speak` capability via one MCP server.",
   "type": "module",
   "bin": {

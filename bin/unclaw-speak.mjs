@@ -245,32 +245,26 @@ function mcpServer() {
     },
   ];
 
-  let buf = Buffer.alloc(0);
+  // MCP stdio transport = newline-delimited JSON: one JSON-RPC message per
+  // line, no embedded newlines. (NOT LSP `Content-Length` framing , that reads
+  // as silence to every MCP client: Claude Code, Codex, Gemini CLI, Cursor, ...)
+  let buf = '';
+  process.stdin.setEncoding('utf8');
   process.stdin.on('data', (chunk) => {
-    buf = Buffer.concat([buf, chunk]);
-    // Content-Length framed messages.
-    for (;;) {
-      const headerEnd = buf.indexOf('\r\n\r\n');
-      if (headerEnd < 0) break;
-      const header = buf.slice(0, headerEnd).toString('utf8');
-      const m = /Content-Length:\s*(\d+)/i.exec(header);
-      if (!m) { buf = buf.slice(headerEnd + 4); continue; }
-      const len = parseInt(m[1], 10);
-      const start = headerEnd + 4;
-      if (buf.length < start + len) break;
-      const body = buf.slice(start, start + len).toString('utf8');
-      buf = buf.slice(start + len);
+    buf += chunk;
+    let nl;
+    while ((nl = buf.indexOf('\n')) >= 0) {
+      const line = buf.slice(0, nl).replace(/\r$/, '').trim();
+      buf = buf.slice(nl + 1);
+      if (!line) continue;
       let msg;
-      try { msg = JSON.parse(body); } catch { continue; }
+      try { msg = JSON.parse(line); } catch { continue; }
       void handle(msg);
     }
   });
 
   function send(obj) {
-    const s = JSON.stringify(obj);
-    const payload = Buffer.from(s, 'utf8');
-    process.stdout.write(`Content-Length: ${payload.length}\r\n\r\n`);
-    process.stdout.write(payload);
+    process.stdout.write(JSON.stringify(obj) + '\n');
   }
 
   async function handle(msg) {
