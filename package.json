@@ -1,7 +1,7 @@
 {
   "name": "unclaw-cli",
-  "version": "0.1.2",
-  "description": "Give your coding agent (Codex, opencode, Gemini CLI, Cursor, Cline, Claude Code, ...) a voice: the UnClaw 3D avatar's `speak` capability via one MCP server.",
+  "version": "0.1.3",
+  "description": "Give your coding agent (Claude Code, Codex, opencode, OpenClaw, Gemini CLI, Cursor, Cline, ...) a voice: the UnClaw 3D avatar's `speak` capability via one MCP server + a cross-agent /unclaw skill.",
   "type": "module",
   "bin": {
     "unclaw": "bin/unclaw.mjs",
@@ -15,5 +15,5 @@
   "homepage": "https://github.com/aaryansachdeva/unclaw-cli#readme",
   "repository": { "type": "git", "url": "git+https://github.com/aaryansachdeva/unclaw-cli.git" },
   "bugs": { "url": "https://github.com/aaryansachdeva/unclaw-cli/issues" },
-  "keywords": ["unclaw", "mcp", "coding-agent", "codex", "opencode", "gemini-cli", "cursor", "cline", "claude-code", "tts", "avatar"]
+  "keywords": ["unclaw", "mcp", "coding-agent", "claude-code", "codex", "opencode", "openclaw", "gemini-cli", "cursor", "cline", "agent-skills", "tts", "avatar"]
 }

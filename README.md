@@ -1,8 +1,8 @@
 # unclaw
 
 Give **any** coding agent a voice: wire the UnClaw 3D avatar's `speak`
-capability into Codex, opencode, Gemini CLI, Cursor, Cline, Roo, Windsurf,
-Claude Code — with one command.
+capability into Claude Code, Codex, opencode, OpenClaw, Gemini CLI, Cursor,
+Cline, Roo, Windsurf — with one command.
 
 ```bash
 npx unclaw-cli               # detect installed agents + connect them all
@@ -36,32 +36,42 @@ the agent self-adjusts.
 
 ## What it does per agent (all verified against official docs)
 
-| Agent | MCP registration | Guidance | `/unclaw` command |
+| Agent | MCP registration | Guidance | `/unclaw` (skill / command) |
 |---|---|---|---|
-| **Codex CLI** | `codex mcp add` → `~/.codex/config.toml` | `~/.codex/AGENTS.md` | `/prompts:unclaw` (deprecated feature) |
-| **opencode** | `~/.config/opencode/opencode.json` (`mcp`, `type:"local"`) | `~/.config/opencode/AGENTS.md` | `/unclaw` |
-| **Gemini CLI** | `~/.gemini/settings.json` (`mcpServers`) | `~/.gemini/GEMINI.md` | `/unclaw` |
-| **Claude Code** | `claude mcp add --scope user` | `~/.claude/CLAUDE.md` | `/unclaw` skill |
+| **Claude Code** | `claude mcp add --scope user` | `~/.claude/CLAUDE.md` | skill `~/.claude/skills/unclaw` |
+| **Codex CLI** | `~/.codex/config.toml` (`startup_timeout_sec`) | `~/.codex/AGENTS.md` | skill `~/.agents/skills/unclaw` (+ legacy `/prompts:unclaw`) |
+| **opencode** | `~/.config/opencode/opencode.json` (`mcp`, `type:"local"`) | `~/.config/opencode/AGENTS.md` | skill `~/.config/opencode/skills/unclaw` + `/unclaw` command |
+| **OpenClaw** | `~/.openclaw/openclaw.json` (`mcp.servers`) | workspace `AGENTS.md` | skill `~/.openclaw/skills/unclaw` → `/unclaw` |
+| **Gemini CLI** | `~/.gemini/settings.json` (`mcpServers`) | `~/.gemini/GEMINI.md` | `/unclaw` command |
 | **Cursor** | `~/.cursor/mcp.json` (`type:"stdio"`) | tool description | — (no user commands) |
 | **Cline** | VS Code globalStorage `cline_mcp_settings.json` (`autoApprove`) | tool description | — |
 | **Roo Code** | globalStorage `mcp_settings.json` (`alwaysAllow`) | tool description | — |
 | **Windsurf** | `~/.codeium/windsurf/mcp_config.json` | tool description | — |
 
-Agents that support user slash-commands get a native **`/unclaw`** that launches
-passthrough + switches on the `speak` tool , matching Claude Code's skill. The
-rest rely on the `launch_unclaw` MCP tool (and auto-launch on first `speak`).
+Every agent with an extension point gets a first-class **`/unclaw`** that
+launches passthrough + switches on the `speak` tool. The rest rely on the
+`launch_unclaw` MCP tool (and auto-launch on first `speak`).
 
 Notes baked in from the research pass:
+- **`SKILL.md` is a cross-agent standard** ([AgentSkills](https://agentskills.io)).
+  The *same* skill file is consumed by Claude Code, Codex, opencode, and
+  OpenClaw — a skill named `unclaw` even auto-becomes OpenClaw's `/unclaw`
+  slash command.
+- **Codex:** custom prompts are deprecated in favor of skills, so the skill is
+  primary (the prompt stays as a legacy bonus). We write `config.toml` directly
+  to set `startup_timeout_sec = 30` — Codex's 10s default trips a spurious
+  "failed to connect" on a Node cold start.
+- **OpenClaw:** external stdio MCP-client support is shipped + stable (release
+  2026.3.31). The server goes under nested `mcp.servers` (not `mcpServers`); one
+  entry serves the embedded agent and is projected into delegated coding CLIs.
 - The runtime is copied to a stable `~/.unclaw/bin/unclaw-speak.mjs` so configs
   survive npx-cache eviction.
 - Every config uses an **absolute** `node` path — Dock-launched GUI editors
   (Cursor/Cline/Windsurf) get a minimal PATH, and in the UnClaw app
   `process.execPath` is Electron, not node.
-- We prefer each tool's **own `mcp add` CLI** where it has one (Codex, Claude);
-  JSON writes refuse to run if an existing config can't be parsed.
+- MCP JSON writes refuse to run if an existing config can't be parsed.
 - `AGENTS.md` is the emerging cross-agent instructions standard (Codex,
-  opencode, Cursor, Gemini, Windsurf, ...). `openclaw` isn't a standalone CLI —
-  it wraps Claude/Codex/opencode, so it inherits their setup.
+  opencode, OpenClaw, Cursor, Gemini, Windsurf, ...).
 
 ## Distribution
 
